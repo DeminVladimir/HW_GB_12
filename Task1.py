@@ -1,36 +1,30 @@
-# Создайте функцию для сортировки файлов по директориям:
-# видео, изображения, текст и т.п. Каждая группа включает
-# файлы с несколькими расширениями. В исходной папке должны
-# остаться только те файлы, которые не подошли для сортировки.
+# Напишите функцию группового переименования файлов. Она должна:
+# 1 принимать параметр желаемое конечное имя файлов. При переименовании в конце имени добавляется порядковый номер.
+# 2 принимать параметр количество цифр в порядковом номере.
+# 3 принимать параметр расширение исходного файла. Переименование должно работать только для этих файлов внутри каталога.
+# 4 принимать параметр расширение конечного файла.
+# 5 принимать диапазон сохраняемого оригинального имени. Например для диапазона [3, 6] берутся буквы с 3 по 6 из исходного имени файла.
+# К ним прибавляется желаемое конечное имя, если оно передано. Далее счётчик файлов и расширение.
 
 
 import os
-import pathlib
 
-def sort_files(path: pathlib.Path, groups=None) -> None:
-    os.chdir(path)
+def files_rename(signature_name: str, digits_num: int, source_ext: str, new_ext: str, range_num=None):
+    files = [f.split(source_ext)[0] for f in os.listdir() if os.path.isfile(f) and f.endswith(source_ext)]
 
-    if groups is None:
-        groups = {
-            pathlib.Path('video'): ['.mp4', '.avi'],
-            pathlib.Path('music'): ['.mp3', '.wav', '.wma'],
-            pathlib.Path('image'): ['.png', '.jpg' , '.bmp', '.svg', '.pdf'],
-            pathlib.Path('text'): ['.txt', '.doc', '.docx']
-        }
+    if not files:
+        print('Файлов с данным расширением не найдено')
+        return
 
-    for target_dir, extension_list in groups.items():
-        if not target_dir.is_dir():
-            target_dir.mkdir()
+    for i, file in enumerate(files, 1):
+        base = file
+        if range_num:
+            start, end = range_num
+            base = file[start - 1: end]
 
-    path_lib = {}
+        new_name = base + signature_name + f'{i:0{digits_num}}' + new_ext
 
-    for keys, values in groups.items():
-        for value in values:
-            path_lib[value] = keys
+        os.rename(f'{file}{source_ext}', new_name)
+        print(f'{file} to {new_name}')
 
-    for file in path.iterdir():
-        if file.is_file() and file.suffix in path_lib.keys():
-            file.replace(path_lib[file.suffix] / file.name)
-
-
-sort_files(pathlib.Path('C:/Users/user/Desktop/всякое'))
+files_rename('_new', 0, '.txt', '.doc')
